@@ -4,20 +4,20 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-const Header = () => {
+
+const Header = ({signOut}) => {
     const router = useRouter();
 
-    const handleSignOut = () => {
-        signOut(auth).then(() => {
+    const handleSignOut = async () => {
+        signOut.then(() => {
             router.push({
                 pathname: '/auth/login',
                 query: { returnUrl: router.asPath }
             });
-        }).catch((error) => {
-            console.log('====================================');
-            console.log(error);
-            console.log('====================================');
-        });
+          }).catch((error) => {
+            // An error happened.
+          });
+          
     }
 
     return (
@@ -51,7 +51,7 @@ const Header = () => {
                             <Link href="/geolocation" className={`nav-link ${router.pathname === '/geolocation' ? 'active' : ''}`} aria-current="page">Geolocation</Link>
                         </li>
                     </ul>
-                    <button className="btn btn-outline-danger" onClick={handleSignOut}  >Logout</button>
+                    <button className="btn btn-outline-danger"  onClick={handleSignOut} >Logout</button>
                 </div>
             </div>
         </nav>

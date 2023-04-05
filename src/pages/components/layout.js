@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Header from './header';
 import { useRouter } from 'next/router';
 import Footer from './footer';
+import { handleSignOut } from "../../utils/firebase";
 
 const Layout = ({ children }) => {
     const router = useRouter();
@@ -16,7 +17,7 @@ const Layout = ({ children }) => {
 
                 {router.pathname === '/'
                     || router.pathname === '/auth/login' ?
-                    '' : <Header />}
+                    '' : <Header signOut={handleSignOut} />}
                 {children}
             </main>
             <Footer />

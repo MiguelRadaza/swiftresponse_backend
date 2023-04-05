@@ -1,5 +1,8 @@
 import Firebase from "firebase/compat/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const FirebaseCredentials = {
     apiKey: "AIzaSyDM9K_vsyay8zgN2wptunnk6ZONwv1jIUo",
@@ -15,5 +18,8 @@ const FirebaseCredentials = {
 const app = Firebase.initializeApp(FirebaseCredentials);
 export const auth = getAuth(app);
 export const signInWithFirebase = signInWithEmailAndPassword;
+export const database = getFirestore(app);
+export const handleSignOut = signOut(auth);
+// export const _handleSignOut = handleSignOut();
 export default Firebase;
 

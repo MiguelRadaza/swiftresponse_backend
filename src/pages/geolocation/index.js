@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '../components/header';
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from '@react-google-maps/api';
+import { useRouter } from 'next/router'
 
 const GeolocationPage = () => {
     const libraries = ['places'];
@@ -8,6 +9,10 @@ const GeolocationPage = () => {
         googleMapsApiKey: 'AIzaSyBFeezviko-NQKCgmR2Eo7PrvGRpb6QvuE',
         libraries,
     });
+
+    const router = useRouter()
+    const { id } = router.query;
+
     const mapContainerStyle = {
         width: '100%',
         height: '72vh',

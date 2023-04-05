@@ -59,7 +59,7 @@ const LoginPage = () => {
                 <div id="second">
 
                     {error &&
-                        <div class="alert alert-danger" role="alert">
+                        <div className="alert alert-danger" role="alert">
                             {error}
                         </div>
                     }
