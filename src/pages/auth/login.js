@@ -1,7 +1,8 @@
 import { React, useState, useEffect } from 'react';
-import { auth, firebase, signInWithFirebase } from "../../utils/firebase";
+import { auth, database, signInWithFirebase, handleSignOut } from "../../utils/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from 'next/router';
+import { collection, getDocs, query, where } from "firebase/firestore"; 
 
 const LoginPage = () => {
     const router = useRouter();
@@ -10,6 +11,7 @@ const LoginPage = () => {
     const [error, setError] = useState(null);
     const [errorCode, setErrorCode] = useState(null);
     const [user, setUser] = useState("");
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,11 +33,9 @@ const LoginPage = () => {
         // Your initialization function here
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const uid = user.uid;
-                router.push({
-                    pathname: '/home',
-                    query: { returnUrl: router.asPath }
-                });
+                 const uid = user.uid;
+                handleUserData(uid);
+                
             } else {
                 router.push({
                     pathname: '/auth/login',
@@ -44,6 +44,32 @@ const LoginPage = () => {
             }
         });
     }, []);
+
+
+    const handleUserData = async (uid)  => {
+        const q = query(collection(database, "users"), where("user_id", "==", uid));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async (doc) => {
+            var role = doc.data()['role'];
+            if (role === "admin") {
+                router.push({
+                    pathname: '/home',
+                    query: { returnUrl: router.asPath }
+                });
+            } else {
+                setError("Unauthorized only admin allowed users to login.");
+                handleSignOut.then(() => {
+                    router.push({
+                        pathname: '/auth/login',
+                        query: { returnUrl: router.asPath }
+                    });
+                  }).catch((error) => {
+                    // An error happened.
+                  });;
+            }
+            // console.log(doc.id, " => ", doc.data()['role']);
+        });
+    }
 
     return (
         <div className="Loginbox" style={{ display: 'block' }}>

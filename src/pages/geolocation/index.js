@@ -1,15 +1,26 @@
-import React from 'react';
+import { React, useState, useEffect } from 'react';
 import Header from '../components/header';
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from '@react-google-maps/api';
+import { database } from "../../utils/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore"; 
 import { useRouter } from 'next/router'
 
 const GeolocationPage = () => {
     const libraries = ['places'];
+    let  latitude = 0;
+    let  longitude = 0;
+    const [center, setCenter] = useState({
+        lat: 14.6747688,
+        lng: 120.9431204,
+    });
+    const [markers, setMarkers] = useState([]);
+    const [selected, setSelected] = useState(null);
+    
+
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: 'AIzaSyBFeezviko-NQKCgmR2Eo7PrvGRpb6QvuE',
         libraries,
     });
-
     const router = useRouter()
     const { id } = router.query;
 
@@ -18,30 +29,68 @@ const GeolocationPage = () => {
         height: '72vh',
     };
 
-    const center = {
-        lat: 37.7749,
-        lng: -122.4194,
-    };
+    // const markers = [
+    //     {
+    //         position: {
+    //             lat: 37.7749,
+    //             lng: -122.4194,
+    //         },
+    //         title: "Marker 1",
+    //         description: "This is Marker 1",
+    //     },
+    //     {
+    //         position: {
+    //             lat: 37.7739,
+    //             lng: -122.4204,
+    //         },
+    //         title: "Marker 2",
+    //         description: "This is Marker 2",
+    //     },
+    // ];
 
-    const markers = [
-        {
-            position: {
-                lat: 37.7749,
-                lng: -122.4194,
-            },
-            title: "Marker 1",
-            description: "This is Marker 1",
-        },
-        {
-            position: {
-                lat: 37.7739,
-                lng: -122.4204,
-            },
-            title: "Marker 2",
-            description: "This is Marker 2",
-        },
-    ];
-    const selected = null;
+    // const center = {
+    //     lat: 37.7749,
+    //     lng: -122.4194,
+    // };
+
+    const handleReportsData = async (reportId = null)  => {
+        if (reportId) {
+            const q = query(collection(database, "reports"), where("reportId", "==", reportId));
+            const querySnapshot = await getDocs(q);
+            var marker = [];
+             querySnapshot.forEach( (doc) => {
+                var reportData = doc.data();
+                latitude = reportData['location'][0];
+                longitude = reportData['location'][1];
+                marker = [
+                    {
+                        reportId: reportData['reportId'],
+                        position: {
+                            lat: latitude,
+                            lng: longitude,
+                        },
+                        title: reportData['address'],
+                        description: reportData['accidentCause'],
+                        image: reportData['imageUrl'],
+                    },
+                ];
+                
+                return;
+            });
+
+            setMarkers(marker);
+            console.log(marker);
+            // setCenter({lat:  latitude, lng: longitude});
+
+        }
+    }
+
+
+    useEffect(() => {
+        handleReportsData(id);
+    }, [])
+
+
     return (
         <div className='p-5' style={{ marginTop: '4%' }}>
             <div className='row'>
@@ -69,23 +118,32 @@ const GeolocationPage = () => {
                         <div className='card-body'>
                             {isLoaded && (
                                 <GoogleMap
+                                id='map'
                                     mapContainerStyle={mapContainerStyle}
-                                    zoom={8}
+                                    zoom={15}
                                     center={center}
                                 >
-                                    {markers.map(marker => (
-                                        <Marker
-                                            key={marker.id}
-                                            position={marker.position}
-                                            onClick={() => setSelected(marker)}
-                                        />
-                                    ))}
+
+                                    {markers && markers.map(marker => {
+                                        return  (
+                                            <Marker
+                                                key={marker.reportId}
+                                                position={marker.position}
+                                                onClick={() => setSelected(marker)}
+                                            />
+                                        );
+                                    })}
                                     {selected && (
                                         <InfoWindow
                                             position={selected.position}
                                             onCloseClick={() => setSelected(null)}
                                         >
-                                            <div>{selected.name}</div>
+                                            
+                                            <div>
+                                                <h1>{selected.title}</h1>
+                                                <h4>{selected.description}</h4>
+                                                <img height="100" width="100" src={selected.image} />
+                                            </div>
                                         </InfoWindow>
                                     )}
                                 </GoogleMap>
